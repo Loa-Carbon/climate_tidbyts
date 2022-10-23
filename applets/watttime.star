@@ -1,9 +1,14 @@
 load("render.star", "render")
 load("http.star", "http")
 load("cache.star", "cache")
+load("hash.star", "hash")
 
-BASE_URL = "https://api2.watttime.org/v2"  # base wattime api url
-TOKEN_EXPIRATION_SECONDS = 1740  # cache token for 29 minutes
+# base wattime api url
+BASE_URL = "https://api2.watttime.org/v2"  
+
+# cache token for 29 minutes
+TOKEN_EXPIRATION_SECONDS = 1740  
+
 # 5 minutes index cache for each balancing authority
 INDEX_CACHE_EXPIRATION_SECONDS = 300
 
@@ -47,7 +52,7 @@ def render_message(message):
 
 
 def get_token(username, password):
-    token_cache_key = "watttime-token-%s-%s" % (username, password)
+    token_cache_key = "watttime-token-%s-%s" % (username, hash.md5(password))
     token = cache.get(token_cache_key)
 
     if token == None:
@@ -115,7 +120,6 @@ def get_index(token, balancing_authority):
         else:
             json = response.json()
             index = json.get("percent", "?")
-            updated_at = json.get("point_time", None)
             cache.set(index_cache_key, index,
                       ttl_seconds=INDEX_CACHE_EXPIRATION_SECONDS)
             return index
